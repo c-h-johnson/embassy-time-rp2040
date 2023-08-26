@@ -1,0 +1,20 @@
+[package]
+name = "embassy-time-rp2040"
+description = "An embassy-time driver using rp2040-hal for embedded-hal compatibility"
+version = "0.1.0"
+license = "Apache-2.0 OR MIT"
+authors = [
+    "Charles Johnson <charles@charlesjohnson.name>",
+]
+keywords = [
+    "embassy-time",
+    "embedded-hal",
+    "rp2040",
+]
+repository = "https://github.com/c-h-johnson/embassy-time-rp2040"
+edition = "2021"
+
+[dependencies]
+critical-section = "1"
+embassy-time = {version="0.1", features = ["tick-hz-1_000_000"]}
+rp2040-hal = { version="0.8", features=["rt", "critical-section-impl"] }
