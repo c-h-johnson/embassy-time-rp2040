@@ -5,6 +5,7 @@ use core::cell::RefCell;
 use critical_section::Mutex;
 use embassy_time::driver::{AlarmHandle, Driver};
 use rp2040_hal::{
+    pac,
     pac::interrupt,
     timer::{Alarm, Alarm0, Alarm1, Alarm2, Alarm3, Instant, ScheduleAlarmError, Timer},
 };
@@ -71,7 +72,7 @@ impl Rp2040TimeDriver {
         }
     }
 
-    /// only call this once
+    /// only call this once in the whole program
     pub fn init(&self, mut timer: Timer) {
         let alarms = [
             Rp2040Alarm::A0(timer.alarm_0().unwrap()),
@@ -84,7 +85,16 @@ impl Rp2040TimeDriver {
             let _ = borrowed_timer.insert(timer);
             let mut borrowed_alarms = self.alarms.borrow_ref_mut(cs);
             let _ = borrowed_alarms.insert(alarms);
-        })
+        });
+
+        // enable interrupts
+        // can only enable after alarms have been initialised because alarm will interrupt on enable
+        unsafe {
+            pac::NVIC::unmask(pac::Interrupt::TIMER_IRQ_0);
+            pac::NVIC::unmask(pac::Interrupt::TIMER_IRQ_1);
+            pac::NVIC::unmask(pac::Interrupt::TIMER_IRQ_2);
+            pac::NVIC::unmask(pac::Interrupt::TIMER_IRQ_3);
+        }
     }
 
     fn interrupt(&self, alarm_index: usize) {
