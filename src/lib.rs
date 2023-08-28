@@ -54,7 +54,7 @@ struct Callback {
 }
 unsafe impl Send for Callback {}
 
-struct Rp2040TimeDriver {
+pub struct Rp2040TimeDriver {
     timer: Mutex<RefCell<Option<Timer>>>,
     alarm_allocated: Mutex<RefCell<[bool; 4]>>,
     alarms: Mutex<RefCell<Option<[Rp2040Alarm; 4]>>>,
@@ -71,7 +71,8 @@ impl Rp2040TimeDriver {
         }
     }
 
-    fn init(&self, mut timer: Timer) {
+    /// only call this once
+    pub fn init(&self, mut timer: Timer) {
         let alarms = [
             Rp2040Alarm::A0(timer.alarm_0().unwrap()),
             Rp2040Alarm::A1(timer.alarm_1().unwrap()),
@@ -147,9 +148,8 @@ impl Driver for Rp2040TimeDriver {
     }
 }
 
-/// only call this once
-pub fn init(timer: Timer) {
-    DRIVER.init(timer);
+pub fn driver() -> &'static Rp2040TimeDriver {
+    &DRIVER
 }
 
 #[interrupt]
